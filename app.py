@@ -88,8 +88,8 @@ def to_bs_code(code: str) -> str:
     return f"sz.{code}"
 
 def get_end_date():
-    # 往前取3天保证有数据（跳过节假日和时区问题）
-    return (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+    # 往前推5天确保有数据（跳过节假日、时区、同步延迟）
+    return (datetime.now() - timedelta(days=5)).strftime("%Y-%m-%d")
 
 @st.cache_data(ttl=3600)
 def fetch_price_data(bs_code: str, days: int = 365) -> pd.DataFrame:
@@ -269,7 +269,7 @@ def full_analyze(code: str) -> dict:
         # 显示调试信息帮助排查
         import baostock as bs2
         lg2 = bs2.login()
-        rs2 = bs2.query_history_k_data_plus(bs_code, "date,close", start_date="2026-01-01", end_date="2026-05-14", frequency="d")
+        rs2 = bs2.query_history_k_data_plus(bs_code, "date,close", start_date="2025-01-01", end_date=(datetime.now() - timedelta(days=5)).strftime("%Y-%m-%d"), frequency="d")
         debug_msg = f"login={lg2.error_code} query={rs2.error_code} msg={rs2.error_msg}"
         bs2.logout()
         return {"error": f"数据获取失败({debug_msg})，len={len(df)}"}
