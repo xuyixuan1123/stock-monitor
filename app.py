@@ -88,10 +88,8 @@ def to_bs_code(code: str) -> str:
     return f"sz.{code}"
 
 def get_end_date():
-    now = datetime.now()
-    if now.hour < 16:
-        return (now - timedelta(days=1)).strftime("%Y-%m-%d")
-    return now.strftime("%Y-%m-%d")
+    # 往前取3天保证有数据（跳过节假日和时区问题）
+    return (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 
 @st.cache_data(ttl=3600)
 def fetch_price_data(bs_code: str, days: int = 365) -> pd.DataFrame:
@@ -267,7 +265,7 @@ def get_pattern(vol_pct, cycle):
 def full_analyze(code: str) -> dict:
     bs_code = to_bs_code(code)
     df = fetch_price_data(bs_code)
-    if df.empty or len(df) < 5:
+    if df.empty or len(df) < 3:
         return {"error": f"股票代码 {code} 数据不足，请确认代码正确"}
     close = df["close"].astype(float)
     high = df["high"].astype(float)
