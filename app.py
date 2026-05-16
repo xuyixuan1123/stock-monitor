@@ -266,7 +266,13 @@ def full_analyze(code: str) -> dict:
     bs_code = to_bs_code(code)
     df = fetch_price_data(bs_code)
     if df.empty or len(df) < 3:
-        return {"error": f"股票代码 {code} 数据不足，请确认代码正确"}
+        # 显示调试信息帮助排查
+        import baostock as bs2
+        lg2 = bs2.login()
+        rs2 = bs2.query_history_k_data_plus(bs_code, "date,close", start_date="2026-01-01", end_date="2026-05-14", frequency="d")
+        debug_msg = f"login={lg2.error_code} query={rs2.error_code} msg={rs2.error_msg}"
+        bs2.logout()
+        return {"error": f"数据获取失败({debug_msg})，len={len(df)}"}
     close = df["close"].astype(float)
     high = df["high"].astype(float)
     low = df["low"].astype(float)
